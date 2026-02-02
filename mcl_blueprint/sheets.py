@@ -53,8 +53,19 @@ REGISTRATION_COLUMNS: list[str] = [
 
 def _spreadsheet_url() -> str:
     """Get the spreadsheet URL from Streamlit secrets."""
-    gsheets = st.secrets.get("connections.gsheets") or st.secrets["connections"]["gsheets"]
-    return str(gsheets["spreadsheet"])
+    # st.secrets parses TOML [connections.gsheets] differently across environments.
+    # Walk possible paths and fall back to the connection's built-in attribute.
+    try:
+        return str(st.secrets["connections"]["gsheets"]["spreadsheet"])
+    except (KeyError, TypeError):
+        pass
+    try:
+        return str(st.secrets["connections.gsheets"]["spreadsheet"])
+    except (KeyError, TypeError):
+        pass
+    # Last resort: read from the connection object itself
+    conn = get_connection()
+    return str(conn._instance.spreadsheet)  # type: ignore[union-attr]
 
 
 def get_connection() -> GSheetsConnection:
