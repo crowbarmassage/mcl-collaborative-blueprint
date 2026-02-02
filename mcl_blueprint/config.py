@@ -48,5 +48,5 @@ ARCHETYPE_FOLLOWUPS: dict[str, str] = {
 WORKSHEET_RESPONSES = "responses"
 
 # OpenAI
-OPENAI_MODEL = "gpt-4o"
+OPENAI_MODEL = "gpt-5-mini-2025-08-07"
 OPENAI_MAX_TOKENS = 300

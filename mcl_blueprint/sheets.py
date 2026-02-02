@@ -50,6 +50,7 @@ def read_all_responses() -> pd.DataFrame:
     df = conn.read(
         worksheet=WORKSHEET_RESPONSES,
         usecols=list(range(len(SHEET_COLUMNS))),
+        ttl=5,
     )
     if df is None or df.empty:
         return pd.DataFrame(columns=SHEET_COLUMNS)

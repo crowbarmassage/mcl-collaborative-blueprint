@@ -28,7 +28,14 @@ logger = logging.getLogger(__name__)
 
 def render_dashboard() -> None:
     """Render the full projector dashboard with auto-refresh."""
-    st_autorefresh(interval=DASHBOARD_REFRESH_INTERVAL_MS, key="dashboard_refresh")
+    # Pause auto-refresh while AI synthesis is displayed
+    generating = st.session_state.get("ai_generating", False)
+    has_result = "ai_tactic" in st.session_state
+
+    if not generating and not has_result:
+        st_autorefresh(
+            interval=DASHBOARD_REFRESH_INTERVAL_MS, key="dashboard_refresh"
+        )
 
     st.title("MCL 2026 — Live Collaborative Blueprint")
 
@@ -65,14 +72,43 @@ def render_dashboard() -> None:
 
     # Section 4: AI Mirror Synthesis
     st.subheader("The AI Mirror — Strategic Blueprint")
-    if st.button(
+
+    if has_result:
+        # Show previously generated tactic (survives reruns)
+        st.markdown(f"### {st.session_state['ai_tactic']}")
+        _render_synthesis_buttons()
+    elif st.button(
         "Generate Strategic Blueprint",
         type="primary",
         use_container_width=True,
     ):
-        with st.spinner("The AI is analyzing the room's collective intelligence..."):
+        st.session_state["ai_generating"] = True
+        with st.spinner(
+            "The AI is analyzing the room's collective intelligence..."
+        ):
             tactic = generate_synthesis(data)
+        st.session_state["ai_generating"] = False
+        st.session_state["ai_tactic"] = tactic
         render_typewriter(tactic)
+        # Show buttons immediately after typewriter finishes
+        _render_synthesis_buttons()
+
+
+def _render_synthesis_buttons() -> None:
+    """Show Regenerate and Resume Live Updates buttons."""
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Regenerate", key="btn_regen", use_container_width=True):
+            del st.session_state["ai_tactic"]
+            st.rerun()
+    with col2:
+        if st.button(
+            "Resume Live Updates",
+            key="btn_resume",
+            use_container_width=True,
+        ):
+            del st.session_state["ai_tactic"]
+            st.rerun()
 
 
 def _aggregate(df: pd.DataFrame) -> AggregatedData:

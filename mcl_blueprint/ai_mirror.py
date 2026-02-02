@@ -68,7 +68,7 @@ def generate_synthesis(data: AggregatedData) -> str:
             {"role": "user", "content": prompt},
         ],
         max_tokens=OPENAI_MAX_TOKENS,
-        temperature=0.8,
+        temperature=1.0,
     )
 
     content = response.choices[0].message.content
