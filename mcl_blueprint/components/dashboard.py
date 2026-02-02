@@ -27,12 +27,18 @@ logger = logging.getLogger(__name__)
 
 
 def render_dashboard() -> None:
-    """Render the full projector dashboard with auto-refresh."""
-    # Pause auto-refresh while AI synthesis is displayed
-    generating = st.session_state.get("ai_generating", False)
+    """Render the full projector dashboard with auto-refresh.
+
+    Uses a two-phase flow for AI generation:
+    1. Button click sets a flag and reruns (so autorefresh is skipped)
+    2. On the rerun, generation + typewriter run without interruption
+    """
+    # Check if we should generate (flag set by button on previous run)
+    should_generate = st.session_state.pop("ai_should_generate", False)
     has_result = "ai_tactic" in st.session_state
 
-    if not generating and not has_result:
+    # Only auto-refresh when idle (not generating, no result displayed)
+    if not should_generate and not has_result:
         st_autorefresh(
             interval=DASHBOARD_REFRESH_INTERVAL_MS, key="dashboard_refresh"
         )
@@ -74,24 +80,26 @@ def render_dashboard() -> None:
     st.subheader("The AI Mirror — Strategic Blueprint")
 
     if has_result:
-        # Show previously generated tactic (survives reruns)
+        # Show previously generated tactic (persists across reruns)
         st.markdown(f"### {st.session_state['ai_tactic']}")
+        _render_synthesis_buttons()
+    elif should_generate:
+        # Phase 2: autorefresh is OFF, safe to call API and animate
+        with st.spinner(
+            "The AI is analyzing the room's collective intelligence..."
+        ):
+            tactic = generate_synthesis(data)
+        st.session_state["ai_tactic"] = tactic
+        render_typewriter(tactic)
         _render_synthesis_buttons()
     elif st.button(
         "Generate Strategic Blueprint",
         type="primary",
         use_container_width=True,
     ):
-        st.session_state["ai_generating"] = True
-        with st.spinner(
-            "The AI is analyzing the room's collective intelligence..."
-        ):
-            tactic = generate_synthesis(data)
-        st.session_state["ai_generating"] = False
-        st.session_state["ai_tactic"] = tactic
-        render_typewriter(tactic)
-        # Show buttons immediately after typewriter finishes
-        _render_synthesis_buttons()
+        # Phase 1: just set the flag and rerun (kills the autorefresh)
+        st.session_state["ai_should_generate"] = True
+        st.rerun()
 
 
 def _render_synthesis_buttons() -> None:
@@ -99,7 +107,8 @@ def _render_synthesis_buttons() -> None:
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Regenerate", key="btn_regen", use_container_width=True):
-            del st.session_state["ai_tactic"]
+            st.session_state.pop("ai_tactic", None)
+            st.session_state["ai_should_generate"] = True
             st.rerun()
     with col2:
         if st.button(
@@ -107,7 +116,7 @@ def _render_synthesis_buttons() -> None:
             key="btn_resume",
             use_container_width=True,
         ):
-            del st.session_state["ai_tactic"]
+            st.session_state.pop("ai_tactic", None)
             st.rerun()
 
 
