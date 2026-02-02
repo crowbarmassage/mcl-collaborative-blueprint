@@ -53,7 +53,8 @@ REGISTRATION_COLUMNS: list[str] = [
 
 def _spreadsheet_url() -> str:
     """Get the spreadsheet URL from Streamlit secrets."""
-    return str(st.secrets["connections"]["gsheets"]["spreadsheet"])
+    gsheets = st.secrets.get("connections.gsheets") or st.secrets["connections"]["gsheets"]
+    return str(gsheets["spreadsheet"])
 
 
 def get_connection() -> GSheetsConnection:
