@@ -1,0 +1,50 @@
+[project]
+name = "mcl-collaborative-blueprint"
+version = "0.1.0"
+description = "Real-time interactive dashboard for MCL 2026 conference — attendee input + live projector visualizations"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.40.0",
+    "st-gsheets-connection>=0.0.4",
+    "plotly>=5.24.0",
+    "openai>=1.50.0",
+    "streamlit-autorefresh>=1.0.1",
+    "pandas>=2.2.0",
+    "gspread>=6.1.0",
+    "google-auth>=2.35.0",
+    "google-auth-oauthlib>=1.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["mcl_blueprint"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=mcl_blueprint --cov-report=term-missing"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
