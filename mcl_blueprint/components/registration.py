@@ -23,12 +23,6 @@ def render_registration_form() -> None:
             max_chars=4,
             key="reg_user_id",
         )
-        passcode = st.text_input(
-            "Choose a 4-digit passcode",
-            max_chars=4,
-            type="password",
-            key="reg_passcode",
-        )
 
         st.divider()
         st.subheader("Optional Profile")
@@ -61,6 +55,14 @@ def render_registration_form() -> None:
         suggested_question = st.text_area(
             "Suggest a question for the session (optional)",
             key="reg_question",
+        )
+
+        st.divider()
+        passcode = st.text_input(
+            "Choose a 4-digit passcode",
+            max_chars=4,
+            type="password",
+            key="reg_passcode",
         )
 
         submitted = st.form_submit_button("Register", type="primary")
