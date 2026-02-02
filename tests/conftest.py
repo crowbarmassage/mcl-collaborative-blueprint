@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from mcl_blueprint.config import PRIORITY_CATEGORIES
-from mcl_blueprint.models import AggregatedData, AttendeeResponse
+from mcl_blueprint.models import AggregatedData, AttendeeResponse, Registration
 
 
 @pytest.fixture
@@ -18,14 +18,32 @@ def sample_response() -> AttendeeResponse:
 
     return AttendeeResponse(
         session_id="test-abc",
+        user_id="1234",
         q1_budgets=budgets,
         q1_reasoning="Mental health is foundational to all other advocacy.",
+        q1_other_description="Community building events",
         q2_threat="Budget Cuts",
         q2_likelihood=7,
         q2_impact=9,
         q2_trigger="State legislature funding review",
         q3_archetype="The Ostrich",
         q3_followup="Creates a vacuum where students have no guidance.",
+    )
+
+
+@pytest.fixture
+def sample_registration() -> Registration:
+    """Create a sample registration for testing."""
+    return Registration(
+        user_id="1234",
+        passcode="5678",
+        job_title="President",
+        school_name="State University",
+        university_type="Public 4-year",
+        locale="Urban",
+        role="MSA Board Member",
+        region="Northeast",
+        suggested_question="How can MSAs collaborate across campuses?",
     )
 
 
@@ -41,7 +59,8 @@ def sample_aggregated_data() -> AggregatedData:
             "Chaplaincy": 12.0,
             "Security/Safety": 10.0,
             "Admin Access": 8.0,
-            "Legal Defense": 7.0,
+            "Legal Defense": 5.0,
+            "Other": 2.0,
         },
         threats=[
             ("Budget Cuts", 7.0, 9.0, "State funding review"),
@@ -69,12 +88,14 @@ def sample_responses_df() -> pd.DataFrame:
     ]
     data: dict[str, list[str] | list[int]] = {
         "session_id": ["abc", "def", "ghi"],
+        "user_id": ["1234", "5678", "9012"],
         "timestamp": [
             "2026-02-01T10:00:00",
             "2026-02-01T10:01:00",
             "2026-02-01T10:02:00",
         ],
         **{col: [15, 20, 10] for col in budget_cols},
+        "q1_other_description": ["events", "", "outreach"],
         "q1_reasoning": ["reason1", "reason2", "reason3"],
         "q2_threat": ["Budget Cuts", "Doxxing", "Budget Cuts"],
         "q2_likelihood": [7, 6, 8],

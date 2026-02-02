@@ -15,6 +15,7 @@ PRIORITY_CATEGORIES: list[str] = [
     "Admin Access",
     "Security/Safety",
     "Legal Defense",
+    "Other",
 ]
 
 # Q2: Threat Matrix
@@ -46,6 +47,48 @@ ARCHETYPE_FOLLOWUPS: dict[str, str] = {
 
 # Google Sheets worksheet names
 WORKSHEET_RESPONSES = "responses"
+WORKSHEET_REGISTRATIONS = "registrations"
+
+# Session state keys
+SESSION_USER_ID = "user_id"
+
+# Registration profile field options
+UNIVERSITY_TYPES: list[str] = [
+    "Public 4-year",
+    "Private 4-year",
+    "Community College",
+    "HBCU",
+    "HSI",
+    "Religious-affiliated",
+    "Other",
+]
+
+LOCALE_TYPES: list[str] = [
+    "Urban",
+    "Suburban",
+    "Rural",
+]
+
+ROLE_OPTIONS: list[str] = [
+    "Student",
+    "MSA Board Member",
+    "Faculty/Staff Advisor",
+    "Chaplain/Imam",
+    "Administration",
+    "Alumni",
+    "Community Partner",
+    "Other",
+]
+
+REGION_OPTIONS: list[str] = [
+    "Northeast",
+    "Southeast",
+    "Midwest",
+    "Southwest",
+    "West Coast",
+    "Pacific Northwest",
+    "Other",
+]
 
 # OpenAI
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"

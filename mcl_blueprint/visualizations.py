@@ -12,6 +12,30 @@ import plotly.graph_objects as go
 from mcl_blueprint.models import AggregatedData
 
 
+def build_priority_pie_chart(data: AggregatedData) -> go.Figure:
+    """Build a pie chart of average budget allocations.
+
+    Args:
+        data: Aggregated response data.
+
+    Returns:
+        Plotly Figure with pie chart slices for each category.
+    """
+    sorted_items = sorted(data.avg_budgets.items(), key=lambda x: x[1], reverse=True)
+    categories = [item[0] for item in sorted_items]
+    values = [item[1] for item in sorted_items]
+
+    fig = px.pie(
+        names=categories,
+        values=values,
+        title="The Ideal Campus — Budget Allocation",
+        color_discrete_sequence=px.colors.sequential.Greens_r,
+    )
+    fig.update_traces(textposition="inside", textinfo="percent+label")
+    fig.update_layout(height=450)
+    return fig
+
+
 def build_priority_bar_chart(data: AggregatedData) -> go.Figure:
     """Build horizontal bar chart of average budget allocations.
 

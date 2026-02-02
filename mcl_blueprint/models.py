@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
+from mcl_blueprint.config import PRIORITY_CATEGORIES
+
 
 @dataclass
 class AttendeeResponse:
@@ -22,10 +24,12 @@ class AttendeeResponse:
     """
 
     session_id: str
+    user_id: str = ""
     timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     # Q1
     q1_budgets: dict[str, int] = field(default_factory=dict)
     q1_reasoning: str = ""
+    q1_other_description: str = ""
     # Q2
     q2_threat: str = ""
     q2_likelihood: int = 5
@@ -39,15 +43,17 @@ class AttendeeResponse:
         """Flatten to a list of strings for Google Sheets row.
 
         Returns:
-            List of string values in column order.
+            List of string values in column order matching SHEET_COLUMNS.
         """
         budget_values = [
-            str(self.q1_budgets.get(cat, 0)) for cat in sorted(self.q1_budgets)
+            str(self.q1_budgets.get(cat, 0)) for cat in PRIORITY_CATEGORIES
         ]
         return [
             self.session_id,
+            self.user_id,
             self.timestamp,
             *budget_values,
+            self.q1_other_description,
             self.q1_reasoning,
             self.q2_threat,
             str(self.q2_likelihood),
@@ -55,6 +61,54 @@ class AttendeeResponse:
             self.q2_trigger,
             self.q3_archetype,
             self.q3_followup,
+        ]
+
+
+@dataclass
+class Registration:
+    """A single attendee registration record.
+
+    Attributes:
+        user_id: 4-digit unique identifier chosen by attendee.
+        passcode: 4-digit passcode for login.
+        timestamp: UTC timestamp of registration.
+        job_title: Optional job title.
+        school_name: Name of school/university.
+        university_type: Type of institution.
+        locale: Urban/Suburban/Rural.
+        role: Attendee's role.
+        region: Geographic region.
+        suggested_question: Optional question suggestion.
+    """
+
+    user_id: str
+    passcode: str
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    job_title: str = ""
+    school_name: str = ""
+    university_type: str = ""
+    locale: str = ""
+    role: str = ""
+    region: str = ""
+    suggested_question: str = ""
+
+    def to_row(self) -> list[str]:
+        """Flatten to a list of strings for Google Sheets row.
+
+        Returns:
+            List of string values in registration column order.
+        """
+        return [
+            self.user_id,
+            self.passcode,
+            self.timestamp,
+            self.job_title,
+            self.school_name,
+            self.university_type,
+            self.locale,
+            self.role,
+            self.region,
+            self.suggested_question,
         ]
 
 

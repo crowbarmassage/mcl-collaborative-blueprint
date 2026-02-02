@@ -10,7 +10,7 @@ import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
-from mcl_blueprint.ai_mirror import generate_synthesis, render_typewriter
+from mcl_blueprint.ai_mirror import generate_synthesis
 from mcl_blueprint.config import (
     DASHBOARD_REFRESH_INTERVAL_MS,
     PRIORITY_CATEGORIES,
@@ -29,11 +29,11 @@ logger = logging.getLogger(__name__)
 def render_dashboard() -> None:
     """Render the full projector dashboard with auto-refresh.
 
-    Uses a two-phase flow for AI generation:
-    1. Button click sets a flag and reruns (so autorefresh is skipped)
-    2. On the rerun, generation + typewriter run without interruption
+    Uses on_click callbacks + a three-phase flow for AI generation:
+    1. Button on_click callback sets a flag (reliable even during autorefresh)
+    2. On rerun, autorefresh is skipped and the API call runs uninterrupted
+    3. Result is stored and st.rerun() triggers the display phase with typewriter
     """
-    # Check if we should generate (flag set by button on previous run)
     should_generate = st.session_state.pop("ai_should_generate", False)
     has_result = "ai_tactic" in st.session_state
 
@@ -50,7 +50,7 @@ def render_dashboard() -> None:
         st.info("Waiting for responses... Share the QR code with attendees.")
         return
 
-    data = _aggregate(df)
+    data = aggregate(df)
 
     st.metric("Total Responses", data.total_responses)
     st.divider()
@@ -80,47 +80,62 @@ def render_dashboard() -> None:
     st.subheader("The AI Mirror — Strategic Blueprint")
 
     if has_result:
-        # Show previously generated tactic (persists across reruns)
-        st.markdown(f"### {st.session_state['ai_tactic']}")
+        tactic = st.session_state["ai_tactic"]
+        st.markdown(f"### {tactic}")
         _render_synthesis_buttons()
     elif should_generate:
-        # Phase 2: autorefresh is OFF, safe to call API and animate
+        # Phase 2: autorefresh is OFF, call API then rerun into display phase
         with st.spinner(
             "The AI is analyzing the room's collective intelligence..."
         ):
             tactic = generate_synthesis(data)
         st.session_state["ai_tactic"] = tactic
-        render_typewriter(tactic)
-        _render_synthesis_buttons()
-    elif st.button(
-        "Generate Strategic Blueprint",
-        type="primary",
-        use_container_width=True,
-    ):
-        # Phase 1: just set the flag and rerun (kills the autorefresh)
-        st.session_state["ai_should_generate"] = True
         st.rerun()
+    else:
+        st.button(
+            "Generate Strategic Blueprint",
+            type="primary",
+            use_container_width=True,
+            on_click=_on_generate_click,
+        )
+
+
+def _on_generate_click() -> None:
+    """Callback for Generate button — sets flag before rerun."""
+    st.session_state["ai_should_generate"] = True
+
+
+def _on_regenerate_click() -> None:
+    """Callback for Regenerate button — clears result and sets flag."""
+    st.session_state.pop("ai_tactic", None)
+    st.session_state["ai_should_generate"] = True
+
+
+def _on_resume_click() -> None:
+    """Callback for Resume button — clears result to re-enable autorefresh."""
+    st.session_state.pop("ai_tactic", None)
 
 
 def _render_synthesis_buttons() -> None:
     """Show Regenerate and Resume Live Updates buttons."""
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Regenerate", key="btn_regen", use_container_width=True):
-            st.session_state.pop("ai_tactic", None)
-            st.session_state["ai_should_generate"] = True
-            st.rerun()
+        st.button(
+            "Regenerate",
+            key="btn_regen",
+            use_container_width=True,
+            on_click=_on_regenerate_click,
+        )
     with col2:
-        if st.button(
+        st.button(
             "Resume Live Updates",
             key="btn_resume",
             use_container_width=True,
-        ):
-            st.session_state.pop("ai_tactic", None)
-            st.rerun()
+            on_click=_on_resume_click,
+        )
 
 
-def _aggregate(df: pd.DataFrame) -> AggregatedData:
+def aggregate(df: pd.DataFrame) -> AggregatedData:
     """Aggregate raw response DataFrame into dashboard-ready data.
 
     Args:

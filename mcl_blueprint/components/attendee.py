@@ -4,8 +4,6 @@ Renders a mobile-optimized form using st.session_state to track
 which step the user is on. Submits all data to Google Sheets at the end.
 """
 
-import uuid
-
 import streamlit as st
 
 from mcl_blueprint.config import (
@@ -14,6 +12,7 @@ from mcl_blueprint.config import (
     IMPACT_RANGE,
     LIKELIHOOD_RANGE,
     PRIORITY_CATEGORIES,
+    SESSION_USER_ID,
     THREAT_OPTIONS,
     TOTAL_CREDITS,
 )
@@ -44,12 +43,13 @@ def render_attendee_form() -> None:
 def _init_session_state() -> None:
     """Initialize session state for a new attendee."""
     if "session_id" not in st.session_state:
-        st.session_state["session_id"] = str(uuid.uuid4())[:8]
+        st.session_state["session_id"] = st.session_state.get(SESSION_USER_ID, "anon")
     if "step" not in st.session_state:
         st.session_state["step"] = 1
     if "response" not in st.session_state:
         st.session_state["response"] = AttendeeResponse(
-            session_id=st.session_state["session_id"]
+            session_id=st.session_state["session_id"],
+            user_id=st.session_state.get(SESSION_USER_ID, ""),
         )
 
 
@@ -82,6 +82,13 @@ def _render_step_1_priority_budget() -> None:
     else:
         st.success("Budget balanced!")
 
+    other_description = ""
+    if budgets.get("Other", 0) > 0:
+        other_description = st.text_input(
+            "What does 'Other' mean to you?",
+            key="q1_other_description",
+        )
+
     reasoning = st.text_area(
         "Pick your highest spend item. In one sentence, "
         "why is this more important than the others?",
@@ -91,6 +98,7 @@ def _render_step_1_priority_budget() -> None:
     if st.button("Next →", key="next_1", disabled=(total != TOTAL_CREDITS)):
         response: AttendeeResponse = st.session_state["response"]
         response.q1_budgets = budgets
+        response.q1_other_description = other_description
         response.q1_reasoning = reasoning
         st.session_state["step"] = 2
         st.rerun()
@@ -174,11 +182,14 @@ def _render_step_3_ai_alignment() -> None:
 
 
 def _render_thank_you() -> None:
-    """Thank you screen after submission."""
-    st.balloons()
-    st.header("Thank You!")
-    st.write("Your response has been recorded.")
-    st.write(
-        "Watch the main screen to see how your voice "
-        "shapes the room's collective blueprint."
-    )
+    """Thank you screen + results summary after submission."""
+    from mcl_blueprint.components.results import render_results_summary
+
+    render_results_summary()
+
+
+def reset_questionnaire() -> None:
+    """Reset session state to allow retaking the questionnaire."""
+    st.session_state["step"] = 1
+    st.session_state.pop("response", None)
+    st.session_state.pop("q3_selected", None)

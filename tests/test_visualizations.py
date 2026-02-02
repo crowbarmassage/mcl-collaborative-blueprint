@@ -6,8 +6,26 @@ from mcl_blueprint.models import AggregatedData
 from mcl_blueprint.visualizations import (
     build_archetype_grid,
     build_priority_bar_chart,
+    build_priority_pie_chart,
     build_threat_scatter,
 )
+
+
+class TestPriorityPieChart:
+    """Tests for the Q1 pie chart."""
+
+    def test_returns_figure(self, sample_aggregated_data: AggregatedData) -> None:
+        fig = build_priority_pie_chart(sample_aggregated_data)
+        assert isinstance(fig, go.Figure)
+
+    def test_has_data(self, sample_aggregated_data: AggregatedData) -> None:
+        fig = build_priority_pie_chart(sample_aggregated_data)
+        assert len(fig.data) > 0
+
+    def test_empty_data_returns_figure(self) -> None:
+        empty = AggregatedData()
+        fig = build_priority_pie_chart(empty)
+        assert isinstance(fig, go.Figure)
 
 
 class TestPriorityBarChart:
