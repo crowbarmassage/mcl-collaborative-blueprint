@@ -67,7 +67,7 @@ def generate_synthesis(data: AggregatedData) -> str:
             },
             {"role": "user", "content": prompt},
         ],
-        max_tokens=OPENAI_MAX_TOKENS,
+        max_completion_tokens=OPENAI_MAX_TOKENS,
         temperature=1.0,
     )
 
