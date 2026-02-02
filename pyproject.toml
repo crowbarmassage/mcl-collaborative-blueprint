@@ -5,14 +5,11 @@ description = "Real-time interactive dashboard for MCL 2026 conference — atten
 requires-python = ">=3.11"
 dependencies = [
     "streamlit>=1.40.0",
-    "st-gsheets-connection>=0.0.4",
+    "st-gsheets-connection>=0.1.0",
     "plotly>=5.24.0",
     "openai>=1.50.0",
     "streamlit-autorefresh>=1.0.1",
-    "pandas>=2.2.0",
-    "gspread>=6.1.0",
-    "google-auth>=2.35.0",
-    "google-auth-oauthlib>=1.2.0",
+    "pandas",
 ]
 
 [project.optional-dependencies]
@@ -44,6 +41,9 @@ warn_unused_ignores = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --cov=mcl_blueprint --cov-report=term-missing"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcl_blueprint"]
 
 [build-system]
 requires = ["hatchling"]
