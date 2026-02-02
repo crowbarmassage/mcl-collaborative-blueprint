@@ -45,8 +45,7 @@ ARCHETYPE_FOLLOWUPS: dict[str, str] = {
     "The Watchtower": "What specific data do they track?",
 }
 
-# Google Sheets
-SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1E4S1pDDdTkBDhcW9ehPRHk_eMU-z92brRGMqEwcx8SM/edit"
+# Google Sheets worksheet names
 WORKSHEET_RESPONSES = "responses"
 WORKSHEET_REGISTRATIONS = "registrations"
 

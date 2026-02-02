@@ -11,7 +11,6 @@ from streamlit_gsheets import GSheetsConnection
 
 from mcl_blueprint.config import (
     PRIORITY_CATEGORIES,
-    SPREADSHEET_URL,
     WORKSHEET_REGISTRATIONS,
     WORKSHEET_RESPONSES,
 )
@@ -69,7 +68,6 @@ def read_all_responses() -> pd.DataFrame:
     """
     conn = get_connection()
     df = conn.read(
-        spreadsheet=SPREADSHEET_URL,
         worksheet=WORKSHEET_RESPONSES,
         usecols=list(range(len(SHEET_COLUMNS))),
         ttl=5,
@@ -90,7 +88,7 @@ def write_response(row_data: list[str]) -> None:
     existing = read_all_responses()
     new_row = pd.DataFrame([row_data], columns=SHEET_COLUMNS)
     updated = pd.concat([existing, new_row], ignore_index=True)
-    conn.update(spreadsheet=SPREADSHEET_URL, worksheet=WORKSHEET_RESPONSES, data=updated)
+    conn.update(worksheet=WORKSHEET_RESPONSES, data=updated)
     logger.info("Wrote response for session %s", row_data[0])
 
 
@@ -102,7 +100,6 @@ def read_all_registrations() -> pd.DataFrame:
     """
     conn = get_connection()
     df = conn.read(
-        spreadsheet=SPREADSHEET_URL,
         worksheet=WORKSHEET_REGISTRATIONS,
         usecols=list(range(len(REGISTRATION_COLUMNS))),
         ttl=5,
@@ -123,7 +120,7 @@ def write_registration(row_data: list[str]) -> None:
     existing = read_all_registrations()
     new_row = pd.DataFrame([row_data], columns=REGISTRATION_COLUMNS)
     updated = pd.concat([existing, new_row], ignore_index=True)
-    conn.update(spreadsheet=SPREADSHEET_URL, worksheet=WORKSHEET_REGISTRATIONS, data=updated)
+    conn.update(worksheet=WORKSHEET_REGISTRATIONS, data=updated)
     logger.info("Wrote registration for user %s", row_data[0])
 
 
