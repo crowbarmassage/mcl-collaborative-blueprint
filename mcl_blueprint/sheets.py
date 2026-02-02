@@ -51,6 +51,11 @@ REGISTRATION_COLUMNS: list[str] = [
 ]
 
 
+def _spreadsheet_url() -> str:
+    """Get the spreadsheet URL from Streamlit secrets."""
+    return str(st.secrets["connections"]["gsheets"]["spreadsheet"])
+
+
 def get_connection() -> GSheetsConnection:
     """Get the cached Google Sheets connection.
 
@@ -67,7 +72,9 @@ def read_all_responses() -> pd.DataFrame:
         DataFrame with all response rows. Empty DataFrame if no data.
     """
     conn = get_connection()
+    url = _spreadsheet_url()
     df = conn.read(
+        spreadsheet=url,
         worksheet=WORKSHEET_RESPONSES,
         usecols=list(range(len(SHEET_COLUMNS))),
         ttl=5,
@@ -85,10 +92,11 @@ def write_response(row_data: list[str]) -> None:
         row_data: List of string values matching SHEET_COLUMNS order.
     """
     conn = get_connection()
+    url = _spreadsheet_url()
     existing = read_all_responses()
     new_row = pd.DataFrame([row_data], columns=SHEET_COLUMNS)
     updated = pd.concat([existing, new_row], ignore_index=True)
-    conn.update(worksheet=WORKSHEET_RESPONSES, data=updated)
+    conn.update(spreadsheet=url, worksheet=WORKSHEET_RESPONSES, data=updated)
     logger.info("Wrote response for session %s", row_data[0])
 
 
@@ -99,7 +107,9 @@ def read_all_registrations() -> pd.DataFrame:
         DataFrame with all registration rows. Empty DataFrame if no data.
     """
     conn = get_connection()
+    url = _spreadsheet_url()
     df = conn.read(
+        spreadsheet=url,
         worksheet=WORKSHEET_REGISTRATIONS,
         usecols=list(range(len(REGISTRATION_COLUMNS))),
         ttl=5,
@@ -117,10 +127,11 @@ def write_registration(row_data: list[str]) -> None:
         row_data: List of string values matching REGISTRATION_COLUMNS order.
     """
     conn = get_connection()
+    url = _spreadsheet_url()
     existing = read_all_registrations()
     new_row = pd.DataFrame([row_data], columns=REGISTRATION_COLUMNS)
     updated = pd.concat([existing, new_row], ignore_index=True)
-    conn.update(worksheet=WORKSHEET_REGISTRATIONS, data=updated)
+    conn.update(spreadsheet=url, worksheet=WORKSHEET_REGISTRATIONS, data=updated)
     logger.info("Wrote registration for user %s", row_data[0])
 
 
